@@ -91,3 +91,26 @@ opt_poly <- nlminb(obj_poly$par, obj_poly$fn, obj_poly$gr)
 
 # Get estimates + std errors - pretty accurate!
 sdreport(obj_poly)
+
+# 3. Create basis functions in mgcv and fit unpenalized splines ---------------------------------
+library(mgcv)
+library(scales)
+
+# Create some sample data
+set.seed(42)
+sample_data_bas <- data.frame(x = sort(runif(n, -1, 1)))
+# Using sine to start
+sample_data_bas$y <- sin(2 * pi * sample_data_bas$x) + rnorm(n, sd = 0.5)
+# Try different numbers of knots
+m1 <- gam(y ~ s(x, k = 5), data = sample_data_bas, method = "REML")
+summary(m1)
+m2 <- gam(y ~ s(x, k = 10), data = sample_data_bas, method = "REML")
+summary(m2)
+m3 <- gam(y ~ s(x, k = 20), data = sample_data_bas, method = "REML")
+summary(m3)
+
+# Visualise
+plot(sample_data_bas, pch = 19, cex = 0.5, col=alpha("black", 0.5))
+lines(sample_data_bas$x, fitted(m1), col = "red", lwd = 2)
+lines(sample_data_bas$x, fitted(m2), col = "green", lwd = 2)
+lines(sample_data_bas$x, fitted(m3), col = "purple", lwd = 2)
