@@ -23,10 +23,6 @@ linreg <- function(params) {
   # of data and parameters visible inside the function, so that one can write 
   # e.g. weight rather than ChickWeight$weight"
 
-  # Q FOR BEN: ref says OBS() function is optional here and "enables extra RTMB features"
-  # and it is "needed to enable automatic simulation and residual calculations from the model object".
-  # Not sure I 100% follow this
-
   getAll(sample_data_lin, params)
   mu <- beta0 + beta1 * x_lin
   nll <- -sum(dnorm(y_lin, mu, sigma, log = TRUE))
@@ -45,7 +41,6 @@ parameters_lin <- list(
 obj_lin <- MakeADFun(linreg, parameters_lin)
 
 # Fit the model
-# Q FOR BEN: would like to know a bit more about what this function is actually doing but not sure how important this is
 opt_lin <- nlminb(obj_lin$par, obj_lin$fn, obj_lin$gr)
 
 # Get estimates + std errors - pretty accurate!
@@ -92,15 +87,18 @@ opt_poly <- nlminb(obj_poly$par, obj_poly$fn, obj_poly$gr)
 # Get estimates + std errors - pretty accurate!
 sdreport(obj_poly)
 
-# 3. Create basis functions in mgcv and fit unpenalized splines ---------------------------------
+# 3. Create basis functions in mgcv and fit unpenalised splines ---------------------------------
 library(mgcv)
 library(scales)
+library(dplyr)
 
 # Create some sample data
 set.seed(42)
 sample_data_bas <- data.frame(x = sort(runif(n, -1, 1)))
 # Using sine to start
 sample_data_bas$y <- sin(2 * pi * sample_data_bas$x) + rnorm(n, sd = 0.5)
+
+# These are *penalised* splines! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Try different numbers of knots
 m1 <- gam(y ~ s(x, k = 5), data = sample_data_bas, method = "REML")
 summary(m1)
@@ -114,3 +112,38 @@ plot(sample_data_bas, pch = 19, cex = 0.5, col=alpha("black", 0.5))
 lines(sample_data_bas$x, fitted(m1), col = "red", lwd = 2)
 lines(sample_data_bas$x, fitted(m2), col = "green", lwd = 2)
 lines(sample_data_bas$x, fitted(m3), col = "purple", lwd = 2)
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+# Now fit *unpenalised* splines ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Use gam() to construct a design matrix
+# (Code from Ben)
+m4 <- gam(y ~ s(x, k = 5), data = sample_data_bas, fit = FALSE)
+m4$X
+
+# Create variables basis1, basis2, basis3, basis4, basis5
+basis_df <- sample_data_bas |> 
+  cbind(as.data.frame(m4$X))
+names(basis_df) <- c("x", "y", "intercept", "basis1", "basis2", "basis3", "basis4")
+
+m5 <- lm(y ~ basis1 + basis2 + basis3 + basis4, data = basis_df)
+summary(m2)
+
+# See what it looks like - you can see a rough pattern, but it could be more wiggly
+plot(sample_data_bas)
+lines(sample_data_bas$x, fitted(m5), col = "red", lwd = 2)
+
+# Try more knots 
+m6 <- gam(y ~ s(x, k = 10), data = sample_data_bas, fit = FALSE)
+m6$X
+
+# Create variables basis1, basis2, basis3, basis4, basis5
+basis_df2 <- sample_data_bas |> 
+  cbind(as.data.frame(m6$X))
+names(basis_df2) <- c("x", "y", "intercept", paste0("basis", 1:9))
+
+m7 <- lm(y ~ basis1 + basis2 + basis3 + basis4 + basis5 + basis6 + basis7 + basis8 + basis9, data = basis_df2)
+summary(m7)
+
+# See what it looks like - this looks pretty good!
+plot(sample_data_bas)
+lines(sample_data_bas$x, fitted(m7), col = "red", lwd = 2)
