@@ -58,4 +58,4 @@ single_session_demo <- simple_simulate_capture_histories(
 single_session_demo$forest <- c(rep(1, 1650), rep(0, 1650))
 
 #Save workspace image for later use --------------------------------------------
-save.image("simulated_data_simple.RData")
+save.image("data/simulated_data_simple.RData")
