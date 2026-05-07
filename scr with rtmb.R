@@ -26,8 +26,6 @@ parameters_scr_inhomogeneous <- list(
   logit_g0 = qlogis(0.5),
   log_sigma = log(50),
   beta0 = 0, # intercept term
-  # beta1 = 0, # coefficient of x-coordinate
-  # beta2 = 0, # coefficient of y-coordinate
   beta3 = 0 # coefficient for forest
 )
 
@@ -36,8 +34,7 @@ parameters_scr_inhomogeneous <- list(
 # This is not a very slick way to do it, but seems like the easiest way for now 
 # because it looks like the likelihood function can only take in one argument when using MakeADFun
 homogeneous <- TRUE
-#single_session_demo$mask <- acre_model_full$args$mask[[1]]
-#single_session_demo$mask_cell_area <- attr(acre_model_full$args$mask[[1]], "area")*10000
+
 scr_likelihood <- function(params) {
   getAll(single_session_demo, params) 
   
@@ -45,11 +42,6 @@ scr_likelihood <- function(params) {
   if (homogeneous) {
     D <- exp(log_D)/10000
   } else {
-    # x <- (single_session_demo$mask[,1] - mean(single_session_demo$mask[,1]))/sd(single_session_demo$mask[,1])
-    # y <- (single_session_demo$mask[,2] - mean(single_session_demo$mask[,2]))/sd(single_session_demo$mask[,2])
-    # D <-  exp(beta0 + beta1*x + 
-    #             beta2*y + 
-    #             beta3*single_session_demo$forest)/10000
     # For now, make density ONLY depend on forest coverage
     D <- exp(beta0 + beta3*single_session_demo$forest)/10000
   } 
@@ -65,7 +57,6 @@ scr_likelihood <- function(params) {
   n.mask <- nrow(single_session_demo$mask)
   ## Area of a single mask cell
   a <- single_session_demo$mask_cell_area/10000
-
 
   ## Constructing a distance matrix. The element (i, j) gives the
   ## distance between the ith mask point and the jth trap. A better
@@ -157,7 +148,7 @@ inhomogeneous_summary <- summary(sdreport(obj_scr_inhomogeneous))
 # Compare to results using acre
 library(acre)
 
-#(Using MSc code)
+# (Using MSc code)
 
 # Create covariates data frame --------------------------------------------------
 cov_df <- data.frame(x = single_session_demo$mask$x,
