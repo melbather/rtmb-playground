@@ -1,6 +1,7 @@
 # Load simulated data
 # Using simplified data where half the area is forest and half is not forest
 library(spatstat)
+library(stringr)
 load("simulated_data_simple.RData")
 
 # I think there was a reason why I made some of the covariates strings instead of ints in the simulation
@@ -24,7 +25,7 @@ parameters_scr_homogeneous <- list(
 parameters_scr_inhomogeneous <- list( 
   logit_g0 = qlogis(0.5),
   log_sigma = log(50),
-  beta0 = -0.5, # intercept term
+  beta0 = 0, # intercept term
   # beta1 = 0, # coefficient of x-coordinate
   # beta2 = 0, # coefficient of y-coordinate
   beta3 = 0 # coefficient for forest
@@ -42,7 +43,7 @@ scr_likelihood <- function(params) {
   
   # D differs based on whether we are using homogeneous or inhomogeneous
   if (homogeneous) {
-    D <- exp(log_D)
+    D <- exp(log_D)/10000
   } else {
     # x <- (single_session_demo$mask[,1] - mean(single_session_demo$mask[,1]))/sd(single_session_demo$mask[,1])
     # y <- (single_session_demo$mask[,2] - mean(single_session_demo$mask[,2]))/sd(single_session_demo$mask[,2])
@@ -52,7 +53,7 @@ scr_likelihood <- function(params) {
     # For now, make density ONLY depend on forest coverage
     D <- exp(beta0 + beta3*single_session_demo$forest)/10000
   } 
-
+  # ADREPORT(D)
   g0 <- plogis(logit_g0)
   sigma <- exp(log_sigma)
 
@@ -94,7 +95,7 @@ scr_likelihood <- function(params) {
   if (!homogeneous) {
     fs_denom <- D*p.det
     fs_denom_sum <- sum(fs_denom) * a
-  } # is this correct?
+  } 
 
   #Calculating likelihood contribution due to each
   # detected animal's capture history.
@@ -150,7 +151,8 @@ scr_likelihood(parameters_scr_inhomogeneous)
 
 obj_scr_inhomogeneous <- MakeADFun(scr_likelihood, parameters_scr_inhomogeneous)
 opt_scr_inhomogeneous <- nlminb(obj_scr_inhomogeneous$par, obj_scr_inhomogeneous$fn, obj_scr_inhomogeneous$gr)
-inhomogeneous_summary <- summary(sdreport(obj_scr_inhomogeneous)) # Getting NaNs for Std. Errors
+inhomogeneous_summary <- summary(sdreport(obj_scr_inhomogeneous))
+
 
 # Compare to results using acre
 library(acre)
@@ -170,9 +172,18 @@ acre_object <- read.acre(single_session_demo$long_form_capture_history, single_s
                           dist.cov = list(villages = village_locations1))
 
 #Create a full model  ----------------------------------------------------------
-acre_model_full <- fit.acre(acre_object, 
+acre_model_forest <- fit.acre(acre_object, 
                           model = list(D=~forest))
 
-#Summary output & AIC ----------------------------------------------------------
-summary(acre_model_full)
+#Summary output ----------------------------------------------------------
+summary(acre_model_forest)
 
+
+# Compare denisty between acre and my code above
+inhomogeneous_summary |> 
+  as.data.frame() |> 
+  filter(str_detect(row.names(inhomogeneous_summary), "D")) |> 
+  pull(Estimate) |> 
+  unique()
+
+predict(acre_model_forest, newdata = data.frame(forest = c(1, 0)))

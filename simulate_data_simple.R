@@ -30,7 +30,7 @@ sessions1 <- generate_session_information(num_sessions1,
                                          2012:2018, 1000, 1000, 40)
 
 #Create a mask -----------------------------------------------------------------
-mask1 <- create_mask(900, 600, 66, 66)
+mask1 <- create_mask(600, 600, 66, 66)
 
 #Set detector locations --------------------------------------------------------
 detectors1 <- matrix(c(rep(-1:1, each = 3)*100, rep(-1:1, 3)*100), ncol=2)
