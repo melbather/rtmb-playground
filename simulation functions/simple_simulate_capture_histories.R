@@ -51,7 +51,7 @@ simple_simulate_capture_histories <- function(session_info, alpha_forest, alpha_
     pull(y)
   mask_length_y <- abs(first_y-second_y)
   mask_cell_area <- mask_length_x*mask_length_y
-  
+
   #UPDATE TRAP LOCATIONS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   #change locations of traps based on session start location
   detector_locations[,1] <- detector_locations[,1] + x_range[1]

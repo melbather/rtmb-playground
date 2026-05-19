@@ -54,8 +54,6 @@ single_session_demo <- simple_simulate_capture_histories(
   village_locations = village_locations1, 
   cp_beta0 = log(50), cp_beta1 = -1)
 
-# Overwrite the forest component so that half the area is "forest"
-single_session_demo$forest <- c(rep(1, 1650), rep(0, 1650))
 
 #Save workspace image for later use --------------------------------------------
 save.image("data/simulated_data_simple.RData")

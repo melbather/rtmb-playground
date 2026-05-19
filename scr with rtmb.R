@@ -36,13 +36,12 @@ parameters_scr_inhomogeneous <- list(
   beta3 = 0 # coefficient for forest
 )
 
+
+# HOMOGENEOUS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Create global variable for homogeneous/inhomogeneous
 # This is not a very slick way to do it, but seems like the easiest way for now 
 # because it looks like the likelihood function can only take in one argument when using MakeADFun
 homogeneous <- TRUE
-
-# HOMOGENEOUS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# homogeneous is set to TRUE above
 # Test function
 scr_likelihood(parameters_scr_homogeneous)
 

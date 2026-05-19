@@ -9,6 +9,7 @@ scr_likelihood <- function(params) {
   } else {
     # For now, make density ONLY depend on forest coverage
     D <- exp(beta0 + beta3*single_session_demo$forest)/10000
+    # change to D <- exp(X %*% betas)/10000 - user provides formula and function calculates X
   } 
   # ADREPORT(D)
   g0 <- plogis(logit_g0)
@@ -21,7 +22,7 @@ scr_likelihood <- function(params) {
   ## Number of mask points.
   n.mask <- nrow(single_session_demo$mask)
   ## Area of a single mask cell
-  a <- single_session_demo$mask_cell_area/10000
+  a <- single_session_demo$mask_cell_area
 
   ## Constructing a distance matrix. The element (i, j) gives the
   ## distance between the ith mask point and the jth trap. A better
