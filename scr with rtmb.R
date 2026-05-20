@@ -38,26 +38,20 @@ parameters_scr_inhomogeneous <- list(
 
 
 # HOMOGENEOUS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Create global variable for homogeneous/inhomogeneous
-# This is not a very slick way to do it, but seems like the easiest way for now 
-# because it looks like the likelihood function can only take in one argument when using MakeADFun
-homogeneous <- TRUE
 # Test function
-scr_likelihood(parameters_scr_homogeneous)
+scr_likelihood(parameters_scr_homogeneous, single_session_demo, TRUE)
 
 # Convert likelihood function into object that the optimiser can use 
-obj_scr_homogeneous <- MakeADFun(scr_likelihood, parameters_scr_homogeneous)
+obj_scr_homogeneous <- MakeADFun(scr_likelihood_closure(scr_likelihood, single_session_demo, TRUE), parameters_scr_homogeneous)
 opt_scr_homogeneous <- nlminb(obj_scr_homogeneous$par, obj_scr_homogeneous$fn, obj_scr_homogeneous$gr)
 summary(sdreport(obj_scr_homogeneous)) 
 
 
 # INHOMOGENEOUS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-homogeneous <- FALSE
-
 # Test function again
-scr_likelihood(parameters_scr_inhomogeneous)
+scr_likelihood(parameters_scr_inhomogeneous, single_session_demo, FALSE)
 
-obj_scr_inhomogeneous <- MakeADFun(scr_likelihood, parameters_scr_inhomogeneous)
+obj_scr_inhomogeneous <- MakeADFun(scr_likelihood_closure(scr_likelihood, single_session_demo, FALSE), parameters_scr_inhomogeneous)
 opt_scr_inhomogeneous <- nlminb(obj_scr_inhomogeneous$par, obj_scr_inhomogeneous$fn, obj_scr_inhomogeneous$gr)
 inhomogeneous_summary <- summary(sdreport(obj_scr_inhomogeneous))
 

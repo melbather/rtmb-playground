@@ -1,6 +1,6 @@
 # This is where the likelihood function lives now because the main script was getting too crowded.
 
-scr_likelihood <- function(params) {
+scr_likelihood <- function(params, data, homogeneous) {
   getAll(single_session_demo, params) 
   
   # D differs based on whether we are using homogeneous or inhomogeneous
@@ -16,13 +16,13 @@ scr_likelihood <- function(params) {
   sigma <- exp(log_sigma)
 
   ## Number of animals detected.
-  n <- nrow(single_session_demo$binary_capture_history)
+  n <- nrow(data$binary_capture_history)
   ## Number of traps.
-  n.traps <- nrow(single_session_demo$traps)
+  n.traps <- nrow(data$traps)
   ## Number of mask points.
-  n.mask <- nrow(single_session_demo$mask)
+  n.mask <- nrow(data$mask)
   ## Area of a single mask cell
-  a <- single_session_demo$mask_cell_area
+  a <- data$mask_cell_area
 
   ## Constructing a distance matrix. The element (i, j) gives the
   ## distance between the ith mask point and the jth trap. A better
@@ -30,8 +30,8 @@ scr_likelihood <- function(params) {
   ## outside this function, and then passing them in as an argument,
   ## to avoid recomputing the distances multiple times during model
   ## fitting.
-  mask.dists <- crossdist(single_session_demo$mask[, 1], single_session_demo$mask[, 2],
-                            single_session_demo$traps[, 1], single_session_demo$traps[, 2])
+  mask.dists <- crossdist(data$mask[, 1], data$mask[, 2],
+                            data$traps[, 1], data$traps[, 2])
   ## Constructing a detection probability matrix. The element (i, j)
   ## gives the probability of an animal located at the ith mask
   ## point being detected at the jth trap.
@@ -57,7 +57,7 @@ scr_likelihood <- function(params) {
   #Calculating likelihood contribution due to each
   # detected animal's capture history.
 
-  capt.hist <- single_session_demo$binary_capture_history
+  capt.hist <- data$binary_capture_history
   tiny_num <- .Machine$double.xmin
   log.f.capt.given.s <- log(mask.probs + tiny_num) %*% t(capt.hist) + log(1-mask.probs) %*% t(1-capt.hist)
   if (!homogeneous) {
@@ -88,3 +88,7 @@ scr_likelihood <- function(params) {
   # ## history probabilities, depending on capt.prob.
   -ll
 }
+
+# Make the above into a closure so that it can be used by MakeADFun
+
+scr_likelihood_closure <- function(f, d, h) function(p) f(p, d, h)
