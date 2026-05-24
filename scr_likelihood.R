@@ -1,5 +1,4 @@
-# Wider function that calls scr_likelihood()
-# Might rename this later
+# Wider function that calls the log likelihood function
 
 source("misc functions/construct-design.R")
 
@@ -12,6 +11,7 @@ scr_likelihood <- function(design_matrix_data, full_data, homogeneous, formula =
       logit_g0 = qlogis(0.5),
       log_sigma = log(100)
     )
+    design <- NULL
   } else {
     design <- construct.design(as.formula(formula), df = design_matrix_data)
     X_fixed <- design$X.lbm
