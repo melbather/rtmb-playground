@@ -4,12 +4,14 @@ library(spatstat)
 library(stringr)
 library(RTMB)
 library(acre)
+library(mgcv)
 
 # Load simulated data
 # Using simplified data where half the area is forest and half is not forest
 load("data/simulated_data_simple.RData")
 
 # Load likelihood function
+source("likelihood_estimates.R")
 source("scr_likelihood.R")
 
 # I think there was a reason why I made some of the covariates strings instead of ints in the simulation
@@ -18,28 +20,9 @@ source("scr_likelihood.R")
 single_session_demo$forest <- as.numeric(single_session_demo$forest)
 single_session_demo$protected_areas <- as.numeric(single_session_demo$protected_areas)
 
-# PARAMETERS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-# Starting parameters
-# For homogeneous case we don't have covariates since density is constant
-parameters_scr_homogeneous <- list(
-  log_D = log(0.1),
-  logit_g0 = qlogis(0.5),
-  log_sigma = log(100)
-)
-# Add covariates to inhomogeneous params
-# Only using forest coverage as a covariate for now
-parameters_scr_inhomogeneous <- list( 
-  logit_g0 = qlogis(0.5),
-  log_sigma = log(50),
-  beta0 = 0, # intercept term
-  beta3 = 0 # coefficient for forest
-)
-
-
 # HOMOGENEOUS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Test function
-scr_likelihood(parameters_scr_homogeneous, single_session_demo, TRUE)
+# scr_likelihood(parameters_scr_homogeneous, single_session_demo, TRUE)
 
 # Convert likelihood function into object that the optimiser can use 
 obj_scr_homogeneous <- MakeADFun(scr_likelihood_closure(scr_likelihood, single_session_demo, TRUE), parameters_scr_homogeneous)
@@ -49,7 +32,13 @@ summary(sdreport(obj_scr_homogeneous))
 
 # INHOMOGENEOUS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Test function again
-scr_likelihood(parameters_scr_inhomogeneous, single_session_demo, FALSE)
+scr_data_inhomogeneous <- data.frame(
+  x = single_session_demo$mask$x, 
+  y = single_session_demo$mask$y, 
+  forest = single_session_demo$forest
+)
+
+likelihood_estimates(scr_data_inhomogeneous, single_session_demo, FALSE, formula = "~ forest + s(x, y, k=20)") # This works!!
 
 obj_scr_inhomogeneous <- MakeADFun(scr_likelihood_closure(scr_likelihood, single_session_demo, FALSE), parameters_scr_inhomogeneous)
 opt_scr_inhomogeneous <- nlminb(obj_scr_inhomogeneous$par, obj_scr_inhomogeneous$fn, obj_scr_inhomogeneous$gr)

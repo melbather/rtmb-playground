@@ -1,94 +1,34 @@
-# This is where the likelihood function lives now because the main script was getting too crowded.
+# Wider function that calls scr_likelihood()
+# Might rename this later
 
-scr_likelihood <- function(params, data, homogeneous) {
-  getAll(single_session_demo, params) 
-  
-  # D differs based on whether we are using homogeneous or inhomogeneous
+source("misc functions/construct-design.R")
+
+scr_likelihood <- function(design_matrix_data, full_data, homogeneous, formula = NULL) {
+
+  # Parameters list
   if (homogeneous) {
-    D <- exp(log_D)/10000
+    parameters <- list(
+      log_D = log(0.1),
+      logit_g0 = qlogis(0.5),
+      log_sigma = log(100)
+    )
   } else {
-    # For now, make density ONLY depend on forest coverage
-    D <- exp(beta0 + beta3*single_session_demo$forest)/10000
-    # change to D <- exp(X %*% betas)/10000 - user provides formula and function calculates X
-  } 
-  # ADREPORT(D)
-  g0 <- plogis(logit_g0)
-  sigma <- exp(log_sigma)
-
-  ## Number of animals detected.
-  n <- nrow(data$binary_capture_history)
-  ## Number of traps.
-  n.traps <- nrow(data$traps)
-  ## Number of mask points.
-  n.mask <- nrow(data$mask)
-  ## Area of a single mask cell
-  a <- data$mask_cell_area
-
-  ## Constructing a distance matrix. The element (i, j) gives the
-  ## distance between the ith mask point and the jth trap. A better
-  ## implementation would involve computing these distances once,
-  ## outside this function, and then passing them in as an argument,
-  ## to avoid recomputing the distances multiple times during model
-  ## fitting.
-  mask.dists <- crossdist(data$mask[, 1], data$mask[, 2],
-                            data$traps[, 1], data$traps[, 2])
-  ## Constructing a detection probability matrix. The element (i, j)
-  ## gives the probability of an animal located at the ith mask
-  ## point being detected at the jth trap.
-  mask.probs <- g0*exp(-mask.dists^2/(2*sigma^2))
-  ## Constructing a detection probability vector. The ith element
-  ## gives the probability of an animal located at the ith mask
-  ## point being detected by *at least one* trap.
-  p.avoid <- apply(1 - mask.probs, 1, prod)
-  p.det <- 1 - p.avoid
-  ## Calculating the effective sampling area.
-  esa <- a*sum(p.det)
-  ADREPORT(esa)
-  # ADREPORT(D)
-  ADREPORT(g0)
-  ADREPORT(sigma)
-  # For inhomogeneous, calculate intensity
-  # Unsure if this is correct!
-  if (!homogeneous) {
-    fs_denom <- D*p.det
-    fs_denom_sum <- sum(fs_denom) * a
-  } 
-
-  #Calculating likelihood contribution due to each
-  # detected animal's capture history.
-
-  capt.hist <- data$binary_capture_history
-  tiny_num <- .Machine$double.xmin
-  log.f.capt.given.s <- log(mask.probs + tiny_num) %*% t(capt.hist) + log(1-mask.probs) %*% t(1-capt.hist)
-  if (!homogeneous) {
-    log.f.s <- log(D) + log(p.det + tiny_num) - log(fs_denom_sum)
-    log.integrand <- log.f.capt.given.s + log(D) - log(fs_denom_sum)
-  } else {
-    log.integrand <- log.f.capt.given.s - log(esa)
-  }
-  f.capt <- colSums(exp(log.integrand) * a)
-
-  # ## Log-likelihood contribution from all capture histories
-  # ## calculated by the log of the sum of the individual likelihood
-  # ## contributions.
-  log.f.capt <- sum(log(f.capt + tiny_num))
-  
-  # ## Log-likelihood contribution from the number of animals
-  # ## detected.
-  if (homogeneous) {
-    log.f.n <- dpois(n, D*esa, log = TRUE) 
-  } else {
-    log.f.n <- dpois(n, fs_denom_sum, log = TRUE) 
+    design <- construct.design(as.formula(formula), df = design_matrix_data)
+    X_fixed <- design$X.lbm
+    X_random <- design$Z.lbm
+    parameters <- list( 
+      logit_g0 = qlogis(0.5),
+      log_sigma = log(50),
+      beta = rep(0, ncol(X_fixed)),
+      u = rep(0, ncol(X_random))
+    )
   }
 
-  # ## Overall log-likelihood. The last part accounts for the fact
-  # ## that we cannot observe an all-zero capture history.
-  ll <- log.f.n + log.f.capt
-  # ## Returning negative log-likelihood, or individual capture
-  # ## history probabilities, depending on capt.prob.
-  -ll
+  # Call SCR likelihood function
+  get_scr_ll(parameters, full_data, homogeneous, design)
+
 }
 
 # Make the above into a closure so that it can be used by MakeADFun
 
-scr_likelihood_closure <- function(f, d, h) function(p) f(p, d, h)
+scr_likelihood_closure <- function(f, mat_d, full_d, h, form) function(p) f(p, mat_d, full_d, h, form)
