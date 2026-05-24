@@ -10,9 +10,10 @@ library(mgcv)
 # Using simplified data where half the area is forest and half is not forest
 load("data/simulated_data_simple.RData")
 
-# Load likelihood function
-source("likelihood_estimates.R")
-source("scr_likelihood.R")
+# Load functions
+source("get_params.R")
+source("scr_log_likelihood.R")
+
 
 # I think there was a reason why I made some of the covariates strings instead of ints in the simulation
 # but I can't remember what it was
@@ -24,23 +25,36 @@ single_session_demo$protected_areas <- as.numeric(single_session_demo$protected_
 # Test function
 # scr_likelihood(parameters_scr_homogeneous, single_session_demo, TRUE)
 
+# Parameters
+parameters_scr_homogeneous <- list(
+  log_D = log(0.1),
+  logit_g0 = qlogis(0.5),
+  log_sigma = log(100)
+)
+
 # Convert likelihood function into object that the optimiser can use 
-obj_scr_homogeneous <- MakeADFun(scr_likelihood_closure(scr_likelihood, single_session_demo, TRUE), parameters_scr_homogeneous)
+obj_scr_homogeneous <- MakeADFun(scr_log_likelihood_closure(scr_log_likelihood, single_session_demo, TRUE), parameters_scr_homogeneous)
 opt_scr_homogeneous <- nlminb(obj_scr_homogeneous$par, obj_scr_homogeneous$fn, obj_scr_homogeneous$gr)
 summary(sdreport(obj_scr_homogeneous)) 
 
 
 # INHOMOGENEOUS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Test function again
+# Test functions ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Create dataframe
 scr_data_inhomogeneous <- data.frame(
   x = single_session_demo$mask$x, 
   y = single_session_demo$mask$y, 
   forest = single_session_demo$forest
 )
 
-likelihood_estimates(scr_data_inhomogeneous, single_session_demo, FALSE, formula = "~ forest + s(x, y, k=20)") # This works!!
+# Get params and design matrix
+params_and_design <- get_params(scr_data_inhomogeneous, single_session_demo, "~ forest + s(x, y, k=20)")
 
-obj_scr_inhomogeneous <- MakeADFun(scr_likelihood_closure(scr_likelihood, single_session_demo, FALSE), parameters_scr_inhomogeneous)
+# Pass params and design matrix to log likelihood function
+scr_log_likelihood(params_and_design$params, single_session_demo, FALSE, design = params_and_design$design_matrix)
+
+# Try with RTMB using closure
+obj_scr_inhomogeneous <- MakeADFun(scr_log_likelihood_closure(scr_log_likelihood, single_session_demo, FALSE, params_and_design$design_matrix), params_and_design$params)
 opt_scr_inhomogeneous <- nlminb(obj_scr_inhomogeneous$par, obj_scr_inhomogeneous$fn, obj_scr_inhomogeneous$gr)
 inhomogeneous_summary <- summary(sdreport(obj_scr_inhomogeneous))
 

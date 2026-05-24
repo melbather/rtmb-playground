@@ -1,6 +1,6 @@
 # This is where the likelihood function lives now because the main script was getting too crowded.
 
-get_scr_ll <- function(params, data, homogeneous, design) {
+scr_log_likelihood <- function(params, data, homogeneous, design) {
   getAll(data, params) 
 
   # D differs based on whether we are using homogeneous or inhomogeneous
@@ -86,3 +86,7 @@ get_scr_ll <- function(params, data, homogeneous, design) {
   # ## history probabilities, depending on capt.prob.
   -ll
 }
+
+# Make the above into a closure so that it can be used by MakeADFun
+
+scr_log_likelihood_closure <- function(f, d, h, design) function(p) f(p, d, h, design)
