@@ -13,6 +13,11 @@ scr_log_likelihood <- function(params, data, homogeneous, design) {
   g0 <- plogis(logit_g0)
   sigma <- exp(log_sigma)
 
+  # random effects
+  sigma_u <- exp(log_sigma_u)
+  nll <- 0
+  nll <- nll - sum(dnorm(u, mean = 0, sd = sigma_u, log = TRUE)) # unsure this is the correct approach
+
   ## Number of animals detected.
   n <- nrow(data$binary_capture_history)
   ## Number of traps.
@@ -39,14 +44,16 @@ scr_log_likelihood <- function(params, data, homogeneous, design) {
   ## point being detected by *at least one* trap.
   p.avoid <- apply(1 - mask.probs, 1, prod)
   p.det <- 1 - p.avoid
+
   ## Calculating the effective sampling area.
   esa <- a*sum(p.det)
   ADREPORT(esa)
+
   # ADREPORT(D)
   ADREPORT(g0)
   ADREPORT(sigma)
+
   # For inhomogeneous, calculate intensity
-  # Unsure if this is correct!
   if (!homogeneous) {
     fs_denom <- D*p.det
     fs_denom_sum <- sum(fs_denom) * a
@@ -59,7 +66,7 @@ scr_log_likelihood <- function(params, data, homogeneous, design) {
   tiny_num <- .Machine$double.xmin
   log.f.capt.given.s <- log(mask.probs + tiny_num) %*% t(capt.hist) + log(1-mask.probs) %*% t(1-capt.hist)
   if (!homogeneous) {
-    log.f.s <- log(D) + log(p.det + tiny_num) - log(fs_denom_sum)
+    log.f.s <- log(D) + log(p.det + tiny_num) - log(fs_denom_sum) # realised this isn't actually used anywhere... do I still need it?
     log.integrand <- log.f.capt.given.s + log(D) - log(fs_denom_sum)
   } else {
     log.integrand <- log.f.capt.given.s - log(esa)
@@ -84,7 +91,10 @@ scr_log_likelihood <- function(params, data, homogeneous, design) {
   ll <- log.f.n + log.f.capt
   # ## Returning negative log-likelihood, or individual capture
   # ## history probabilities, depending on capt.prob.
-  -ll
+  # -ll
+
+  nll <- nll - ll
+  nll
 }
 
 # Make the above into a closure so that it can be used by MakeADFun

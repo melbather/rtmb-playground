@@ -48,15 +48,23 @@ scr_data_inhomogeneous <- data.frame(
 )
 
 # Get params and design matrix
-params_and_design <- get_params(scr_data_inhomogeneous, single_session_demo, "~ forest + s(x, y, k=20)")
+params_and_design <- get_params(scr_data_inhomogeneous, "~ forest + s(x, y, k=20)")
 
 # Pass params and design matrix to log likelihood function
 scr_log_likelihood(params_and_design$params, single_session_demo, FALSE, design = params_and_design$design_matrix)
 
 # Try with RTMB using closure
-obj_scr_inhomogeneous <- MakeADFun(scr_log_likelihood_closure(scr_log_likelihood, single_session_demo, FALSE, params_and_design$design_matrix), params_and_design$params)
+obj_scr_inhomogeneous <- MakeADFun(
+  scr_log_likelihood_closure(
+    scr_log_likelihood, 
+    single_session_demo, 
+    FALSE, 
+    params_and_design$design_matrix
+  ), 
+    params_and_design$params, 
+    random = "u")
 opt_scr_inhomogeneous <- nlminb(obj_scr_inhomogeneous$par, obj_scr_inhomogeneous$fn, obj_scr_inhomogeneous$gr)
-inhomogeneous_summary <- summary(sdreport(obj_scr_inhomogeneous))
+summary(sdreport(obj_scr_inhomogeneous))
 
 
 # COMPARE TO ACRE ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -2,13 +2,14 @@
 
 source("misc functions/construct-design.R")
 
-get_params <- function(design_matrix_data, full_data, formula) {
+get_params <- function(design_matrix_data, formula) {
   design <- construct.design(as.formula(formula), df = design_matrix_data)
   X_fixed <- design$X.lbm
   X_random <- design$Z.lbm
   parameters <- list( 
     logit_g0 = qlogis(0.5),
     log_sigma = log(50),
+    log_sigma_u = 1,
     beta = rep(0, ncol(X_fixed)),
     u = rep(0, ncol(X_random))
   )
