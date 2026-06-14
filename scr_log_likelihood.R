@@ -2,7 +2,7 @@
 
 scr_log_likelihood <- function(params, data, homogeneous, design) {
   getAll(data, params) 
-
+  
   # D differs based on whether we are using homogeneous or inhomogeneous
   if (homogeneous) {
     D <- exp(log_D)/10000
@@ -64,19 +64,23 @@ scr_log_likelihood <- function(params, data, homogeneous, design) {
 
   capt.hist <- data$binary_capture_history
   tiny_num <- .Machine$double.xmin
-  log.f.capt.given.s <- log(mask.probs + tiny_num) %*% t(capt.hist) + log(1-mask.probs) %*% t(1-capt.hist)
-  if (!homogeneous) {
-    log.f.s <- log(D) + log(p.det + tiny_num) - log(fs_denom_sum) # realised this isn't actually used anywhere... do I still need it?
-    log.integrand <- log.f.capt.given.s + log(D) - log(fs_denom_sum)
+  #browser()
+  if (nrow(data$binary_capture_history) != 0) {
+    log.f.capt.given.s <- log(mask.probs + tiny_num) %*% t(capt.hist) + log(1-mask.probs) %*% t(1-capt.hist)
+    if (!homogeneous) {
+      log.f.s <- log(D) + log(p.det + tiny_num) - log(fs_denom_sum) # realised this isn't actually used anywhere... do I still need it?
+      log.integrand <- log.f.capt.given.s + log(D) - log(fs_denom_sum)
+    } else {
+      log.integrand <- log.f.capt.given.s - log(esa)
+    }
+      f.capt <- colSums(exp(log.integrand) * a)
+      # ## Log-likelihood contribution from all capture histories
+      # ## calculated by the log of the sum of the individual likelihood
+      # ## contributions.
+      log.f.capt <- sum(log(f.capt + tiny_num))
   } else {
-    log.integrand <- log.f.capt.given.s - log(esa)
+    log.f.capt <- 0
   }
-  f.capt <- colSums(exp(log.integrand) * a)
-
-  # ## Log-likelihood contribution from all capture histories
-  # ## calculated by the log of the sum of the individual likelihood
-  # ## contributions.
-  log.f.capt <- sum(log(f.capt + tiny_num))
   
   # ## Log-likelihood contribution from the number of animals
   # ## detected.
@@ -90,11 +94,13 @@ scr_log_likelihood <- function(params, data, homogeneous, design) {
   # ## that we cannot observe an all-zero capture history.
   ll <- log.f.n + log.f.capt
   # ## Returning negative log-likelihood, or individual capture
-  # ## history probabilities, depending on capt.prob.
+  # ## history probabil ities, depending on capt.prob.
   # -ll
 
   nll <- nll - ll
   nll
+  # if (nrow(data$binary_capture_history) == 0) browser()
+  # if (is.nan(nll)) browser()
 }
 
 # Make the above into a closure so that it can be used by MakeADFun

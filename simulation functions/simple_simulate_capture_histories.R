@@ -88,11 +88,14 @@ simple_simulate_capture_histories <- function(session_info, alpha_forest, alpha_
   mountain <- ifelse(session_info$terrain == "mountain", beta6, 0)
   
   #SESSION WEATHER ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  if(session_info$weather == "snow") weather <- 1 * beta5
-  else if(session_info$weather == "rain") weather <- 2 * beta5
-  else if(session_info$weather == "overcast") weather <- 3 * beta5
-  else weather <- 4 * beta5
-  g0 <-  plogis(qlogis(g0_base) + mountain + weather)
+  # if(session_info$weather == "snow") weather <- 1 * beta5
+  # else if(session_info$weather == "rain") weather <- 2 * beta5
+  # else if(session_info$weather == "overcast") weather <- 3 * beta5
+  # else weather <- 4 * beta5
+  # g0 <-  plogis(qlogis(g0_base) + mountain + weather)
+
+  # For this simple version, g0 is just going to be constant.
+  g0 <- g0_base
 
   #ANIMAL LOCATIONS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   #Animal locations saved here for future plotting
@@ -112,24 +115,15 @@ simple_simulate_capture_histories <- function(session_info, alpha_forest, alpha_
 
   #CALCULATE DENSITIES ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   #Get the densities inside all mask cells
-  if(!is.null(village_locations)) {
-    D <-  exp(beta0 + beta1*mask_locations[,1] + 
-                beta2*mask_locations[,2] + 
-                beta3*sim.forest +
-                beta4*nearest_village_distance +
-                beta7*sim.protected +
-                beta8*mask_locations_with_alt$altitude +
-                beta9*session_info$time)/10000
-  } else {
-    D <-  exp(beta0 + beta1*mask_locations[,1] + 
-                beta2*mask_locations[,2] + 
-                beta3*sim.forest +
-                beta7*sim.protected +
-                beta8*mask_locations_with_alt$altitude +
-                beta9*session_info$time)/10000
-  }
-  
-  
+  # D <- exp(beta0 + sin(beta1*mask_locations[,1]) + # making density vary non-linearly with space
+  #   sin(beta2*mask_locations[,2]) + 
+  #   beta3*sim.forest)/10000 # only using space and forest as the covariates that control density
+D <- geoR::grf(nrow(mask1),
+  grid = mask_locations, xlims = range(mask_locations[,1]),
+  ylims = range(mask_locations[,2]), cov.pars = c(2, 100000*1.2)
+)$data * beta3*sim.forest
+
+
   #FIND THE ANIMALS WITHIN THE MASK CELLS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   #get the expected number of animals within all the cells
   animals_in_cells <- rpois(length(D), mask_cell_area * D)
@@ -221,8 +215,8 @@ simple_simulate_capture_histories <- function(session_info, alpha_forest, alpha_
        "long_form_capture_history" = long_capt_hist, #add observed bearings column
        "animal_locations" = na.omit(animal_coords),
        "detected_animal_locations" = detected_animal_coords,
-       "forest" = as.character(sim.forest),
-       "protected_areas" = as.character(sim.protected),
+       "forest" = sim.forest,
+       "protected_areas" = sim.protected,
        "altitude" = mask_locations_with_alt$altitude,
        "traps" = traps,
        "mask" = mask_locations,

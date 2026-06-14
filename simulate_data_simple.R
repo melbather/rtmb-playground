@@ -33,7 +33,7 @@ sessions1 <- generate_session_information(num_sessions1,
 mask1 <- create_mask(600, 600, 66, 66)
 
 #Set detector locations --------------------------------------------------------
-detectors1 <- matrix(c(rep(-1:1, each = 3)*100, rep(-1:1, 3)*100), ncol=2)
+detectors1 <- matrix(c(rep(-2:1, each = 4)*100, rep(-2:1, 4)*100), ncol=2)
 
 #Test with the first session only ----------------------------------------------
 single_session_demo <- simple_simulate_capture_histories(
@@ -44,7 +44,7 @@ single_session_demo <- simple_simulate_capture_histories(
   beta0 = -1, beta1 = -0.0002, 
   mask_locations = mask1, 
   detector_locations = detectors1, 
-  g0_base = 0.85, 
+  g0_base = 0.9, 
   sigma = 85, 
   x_range = c(sessions1[1,5], sessions1[1,6]), 
   y_range = c(sessions1[1,7], sessions1[1,8]), 
@@ -56,4 +56,4 @@ single_session_demo <- simple_simulate_capture_histories(
 
 
 #Save workspace image for later use --------------------------------------------
-save.image("data/simulated_data_simple.RData")
+save.image("data/simulated_data_simple_constantg0.RData")
