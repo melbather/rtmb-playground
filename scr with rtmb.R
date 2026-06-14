@@ -76,80 +76,40 @@ hist(estimated_density)
 # Test the above process with gibbons data -----------------------------------------------------------
 load("data/gibbon-data.RData")
 
-# Get params and design matrix
-params_and_design_gibbons <- Map(
-  function(mask, mask_df) {
-    forest <- ifelse(mask_df$FOREST_COVER == "DENSE", 1, 0)
-      df <- data.frame(
-      x = mask[,1],
-      y = mask[,2],
-      forest = forest
-    )
-    get_params(df, "~ forest + s(x, y, k=20)")  
-  },
-  mask.full,
-  mask.full.df)
-
 # Format data so my function can use it
-# gibbons_data <- Map(
-#   function(capt, trap, mask) {
-#     binary_capture_history <- as.data.frame(capt$bincapt)
-#     traps <- as.data.frame(traps)
-#     names(traps)[1:2] <- c("x", "y")
-#     mask <- as.data.frame(mask)
-#     names(mask)[1:2] <- c("x", "y")
-#     area <- mask_cell_area(mask)
-
-#     list(
-#       binary_capture_history = binary_capture_history,
-#       traps = traps,
-#       mask = mask,
-#       mask_cell_area = area
-#     )
-#   },
-#   capt,
-#   traps,
-#   mask.full
-# )
+# TODO - vectorise this?
 gibbons_data <- list()
 for (i in 1:length(capt)) {
   gibbons_data[[i]] <- list(
-    binary_capture_history = as.data.frame(capt$bincapt[[i]]),
+    binary_capture_history = as.data.frame(capt[[i]]$bincapt),
     traps = traps[[i]],
     mask = mask.full[[i]],
     mask_cell_area = mask_cell_area(mask.full[[i]])
   )
 }
 
-# Apply likelihood function to each session and add the log likelihoods together
-gibbons_ll <- sum(
-  unlist(Map(
-    function(p, data) {
-      scr_log_likelihood(
-        p[[2]], data, FALSE, p[[1]] # TODO fix this
-      )
-    },
-    params_and_design_gibbons,
-    gibbons_data
-  ))
-)
+# Combine all mask dfs into one
+mask.df <- cbind(do.call(rbind, mask.full), do.call(rbind, mask.full.df)) |> 
+  mutate(forest = ifelse(FOREST_COVER == "DENSE", 1, 0))
 
-test <- 0
-for (i in 1:58) {
-  design_matrix <- params_and_design_gibbons[[i]][["design_matrix"]]
-  parameters <- list(
-    
-  )
-  ll <- scr_log_likelihood(parameters, gibbons_data[[i]], FALSE, design_matrix)
-  print(ll)
-  test <- test + ll
-}
+# One big design matrix for entire mask
+params_and_design_gibbons <- get_params(mask.df, "~ forest + s(x, y, k=20)")
 
+# Test likelihood function - seems to work
+scr_log_likelihood(params_and_design_gibbons$params, gibbons_data, FALSE, design = params_and_design_gibbons$design_matrix)
 
-# Test that likelihood closure works
-scr_log_likelihood(params_and_design_gibbons$params, single_session_demo, FALSE, design = params_and_design_gibbons$design_matrix)
-
-
+# Try with RTMB using closure
+obj_scr_gibbons <- MakeADFun(
+  scr_log_likelihood_closure(
+    scr_log_likelihood, 
+    gibbons_data, 
+    FALSE, 
+    params_and_design_gibbons$design_matrix
+  ), 
+    params_and_design_gibbons$params, 
+    random = "u")
+opt_scr_gibbons <- nlminb(obj_scr_gibbons$par, obj_scr_gibbons$fn, obj_scr_gibbons$gr)
+sdreport_gibbons <- summary(sdreport(obj_scr_gibbons))
 
 # COMPARE TO ACRE ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
