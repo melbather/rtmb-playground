@@ -77,7 +77,6 @@ hist(estimated_density)
 load("data/gibbon-data.RData")
 
 # Format data so my function can use it
-# TODO - vectorise this?
 gibbons_data <- list()
 for (i in 1:length(capt)) {
   gibbons_data[[i]] <- list(
