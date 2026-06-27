@@ -8,6 +8,7 @@ library(mgcv)
 library(dplyr)
 
 load("data/gibbon-data.RData")
+source("fitting-functions/fitting-functions.R")
 source("fit_scr.R")
 source("misc functions/plot_density.R")
 
@@ -29,10 +30,10 @@ fit <- fit_scr(
 
 summary(fit$sdreport)
 
-# Try density plotting function
-pred_mask <- data.frame(
-  x = seq(min(fine.mask.df$x), max(fine.mask.df$x), length.out = 1000),
-  y = seq(min(fine.mask.df$y), max(fine.mask.df$y), length.out = 1000)
-)
+# Try density plotting function - todo change into grid
+x <- seq(min(fine.mask.df$x), max(fine.mask.df$x), length.out = 100)
+y <- seq(min(fine.mask.df$y), max(fine.mask.df$y), length.out = 100)
+
+pred_mask <- expand.grid(x = x, y = y)
 
 plot_density(fit, pred_mask)

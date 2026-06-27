@@ -68,7 +68,8 @@ fit_scr <- function(bin_capt, mask_coords, mask_df, traps, formula, detfn = "HN"
     sm2ran = params_and_design$sm2ran,
     opt_scr = opt_scr,
     sdreport = sdreport,
-    orig_mask = mask_df
+    orig_mask = mask_df,
+    model = formula
   )
 
 }

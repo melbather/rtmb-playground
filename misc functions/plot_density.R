@@ -5,7 +5,7 @@ plot_density <- function(fit, mask) {
   pred_df <- data.frame(x = mask$x, y = mask$y) # TODO add covariates from mask 
 
   pred_design <- construct.design(
-    model = fit$model,
+    model = as.formula(fit$model),
     df = pred_df,
     sm = fit$design$sm,
     sm2ran = fit$design$sm2ran,
@@ -26,14 +26,16 @@ plot_density <- function(fit, mask) {
     pull(Estimate)
 
   us <- sdreport_summary |> 
-    filter(rownames(sdreport_summary) == "^u") |> 
+    filter(grepl("^u", rownames(sdreport_summary))) |> 
     pull(Estimate)
+
+  #browser()
 
   # Predict density
   D_pred <- as.vector(exp(X_pred %*% betas + Z_pred %*% us)/10000)
 
   # Make heatmap
-  ggplot(pred_df, aes(a, y, fill = D_pred)) +
+  ggplot(pred_df, aes(x, y, fill = D_pred)) +
     geom_raster() +
     coord_equal() +
     scale_fill_viridis_c(name = "Density") +
