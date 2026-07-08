@@ -118,10 +118,10 @@ simple_simulate_capture_histories <- function(session_info, alpha_forest, alpha_
   # D <- exp(beta0 + sin(beta1*mask_locations[,1]) + # making density vary non-linearly with space
   #   sin(beta2*mask_locations[,2]) + 
   #   beta3*sim.forest)/10000 # only using space and forest as the covariates that control density
-D <- geoR::grf(nrow(mask1),
-  grid = mask_locations, xlims = range(mask_locations[,1]),
-  ylims = range(mask_locations[,2]), cov.pars = c(2, 100000*1.2)
-)$data * beta3*sim.forest
+  D <- geoR::grf(nrow(mask1),
+    grid = mask_locations, xlims = range(mask_locations[,1]),
+    ylims = range(mask_locations[,2]), cov.pars = c(2, 100000*1.2)
+  )$data * beta3*sim.forest
 
 
   #FIND THE ANIMALS WITHIN THE MASK CELLS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

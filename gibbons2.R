@@ -10,8 +10,11 @@ library(dplyr)
 load("data/gibbon-data.RData")
 source("fitting-functions/fitting-functions.R")
 source("fit_scr.R")
-source("misc functions/plot_density.R")
-
+# Source all misc functions
+sapply(
+  list.files("misc functions", full.names = TRUE, recursive = TRUE), function(i) {
+    source(paste0(i))
+  })
 # Function needs a list of binary capt histories only
 bin_capt <- lapply(capt, function(x) x[["bincapt"]])
 
@@ -30,10 +33,10 @@ fit <- fit_scr(
 
 summary(fit$sdreport)
 
-# Try density plotting function - todo change into grid
+# Try density plotting function
 x <- seq(min(fine.mask.df$x), max(fine.mask.df$x), length.out = 100)
 y <- seq(min(fine.mask.df$y), max(fine.mask.df$y), length.out = 100)
 
 pred_mask <- expand.grid(x = x, y = y)
 
-plot_density(fit, pred_mask)
+plot_density(fit, pred_mask, traps)

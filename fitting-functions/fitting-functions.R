@@ -1,5 +1,6 @@
 library(mgcv)
 library(TMB)
+library(fields)
 
 
 convert.traps <- function(traps){

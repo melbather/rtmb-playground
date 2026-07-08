@@ -1,4 +1,4 @@
-plot_density <- function(fit, mask) {
+plot_density <- function(fit, mask, detectors) {
   library(ggplot2)
 
   # Predict density across mask
@@ -15,6 +15,8 @@ plot_density <- function(fit, mask) {
     )
   )
 
+  #browser()
+
   X_pred <- pred_design$X.lbm
   Z_pred <- pred_design$Z.lbm
 
@@ -29,15 +31,26 @@ plot_density <- function(fit, mask) {
     filter(grepl("^u", rownames(sdreport_summary))) |> 
     pull(Estimate)
 
-  #browser()
-
   # Predict density
   D_pred <- as.vector(exp(X_pred %*% betas + Z_pred %*% us)/10000)
+
+  # Combine all detectors together to plot on top
+  all_detectors <- bind_rows(
+    lapply(detectors, function(mat) {
+      data.frame(
+        x = mat[, 1],
+        y = mat[, 2]
+      )
+    })
+  )
 
   # Make heatmap
   ggplot(pred_df, aes(x, y, fill = D_pred)) +
     geom_raster() +
     coord_equal() +
+    geom_point(data = all_detectors, 
+      aes(x = x, y = y), colour = "red",
+      inherit.aes = FALSE) +
     scale_fill_viridis_c(name = "Density") +
     theme_minimal()
 }

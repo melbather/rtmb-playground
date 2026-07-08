@@ -2,7 +2,7 @@
 
 scr_log_likelihood <- function(params, data_list, homogeneous, design, mask_dists, detfn = "HN") {
   getAll(params)
-
+  #browser()
   # parameters
   sigma <- exp(log_sigma)
   ADREPORT(sigma)
@@ -56,7 +56,7 @@ scr_log_likelihood <- function(params, data_list, homogeneous, design, mask_dist
       mask.probs <- g0*exp(-mask.dists^2/(2*sigma^2))
       p.avoid <- apply(1 - mask.probs, 1, prod)
       p.det <- 1 - p.avoid
-
+      #browser()
       ## Calculating the effective sampling area.
       esa <- a*sum(p.det)
       ADREPORT(esa)
@@ -85,7 +85,7 @@ scr_log_likelihood <- function(params, data_list, homogeneous, design, mask_dist
     capt.hist <- data$binary_capture_history
     tiny_num <- .Machine$double.xmin
 
-    if (nrow(data$binary_capture_history) != 0) {s
+    if (nrow(data$binary_capture_history) != 0) {
       if (detfn == "HHN") log.f.capt.given.s <- log(-expm1(-lambda) + tiny_num) %*% t(capt.hist) - lambda %*% t(1-capt.hist)
       else log.f.capt.given.s <- log(mask.probs + tiny_num) %*% t(capt.hist) + log(1-mask.probs) %*% t(1-capt.hist)
 

@@ -112,23 +112,23 @@ scr.nll <- function(pars, capt, traps, mask, capt.probs = FALSE){
 }
 
 ## Loading some data to test things out.
-load("test-data.RData")
+# load("test-data.RData")
 
-## Some start values: D = 0.1, g0 = 0.5, sigma = 50.
-par.start <- c(log(0.1), qlogis(0.5), log(50))
+# ## Some start values: D = 0.1, g0 = 0.5, sigma = 50.
+# par.start <- c(log(0.1), qlogis(0.5), log(50))
 
-scr.nll(par.start, capt = test.data$bin.capt, traps = test.data$traps, mask = test.data$mask)
+# scr.nll(par.start, capt = test.data$bin.capt, traps = test.data$traps, mask = test.data$mask)
 
-## Fitting the model.
-fit <- optim(par.start, scr.nll, capt = test.data$bin.capt, traps = test.data$traps, mask = test.data$mask)
+# ## Fitting the model.
+# fit <- optim(par.start, scr.nll, capt = test.data$bin.capt, traps = test.data$traps, mask = test.data$mask)
 
-## Unlinking estimates.
-## D:
-exp(fit$par[1])
-## g0:
-plogis(fit$par[2])
-## sigma:
-exp(fit$par[3])
-## Negative log-likelihood at the estimates.
-fit$value
+# ## Unlinking estimates.
+# ## D:
+# exp(fit$par[1])
+# ## g0:
+# plogis(fit$par[2])
+# ## sigma:
+# exp(fit$par[3])
+# ## Negative log-likelihood at the estimates.
+# fit$value
 
