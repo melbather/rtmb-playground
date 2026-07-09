@@ -1,4 +1,4 @@
-plot_density <- function(fit, mask, detectors) {
+plot_density <- function(fit, mask, detectors = NULL, plot_det_density = FALSE) {
   library(ggplot2)
 
   # Predict density across mask
@@ -14,8 +14,6 @@ plot_density <- function(fit, mask, detectors) {
       y = fit$orig_mask$y
     )
   )
-
-  #browser()
 
   X_pred <- pred_design$X.lbm
   Z_pred <- pred_design$Z.lbm
@@ -34,23 +32,43 @@ plot_density <- function(fit, mask, detectors) {
   # Predict density
   D_pred <- as.vector(exp(X_pred %*% betas + Z_pred %*% us)/10000)
 
-  # Combine all detectors together to plot on top
-  all_detectors <- bind_rows(
-    lapply(detectors, function(mat) {
-      data.frame(
-        x = mat[, 1],
-        y = mat[, 2]
-      )
-    })
-  )
-
   # Make heatmap
-  ggplot(pred_df, aes(x, y, fill = D_pred)) +
+  p <- ggplot(pred_df, aes(x, y, fill = D_pred)) +
     geom_raster() +
     coord_equal() +
-    geom_point(data = all_detectors, 
-      aes(x = x, y = y), colour = "red",
-      inherit.aes = FALSE) +
     scale_fill_viridis_c(name = "Density") +
     theme_minimal()
+
+  if (!is.null(detectors)) {
+      # Combine all detectors together to plot on top
+      all_detectors <- bind_rows(
+        lapply(detectors, function(mat) {
+          data.frame(
+            x = mat[, 1],
+            y = mat[, 2]
+          )
+        })
+      )
+    
+    if (plot_det_density) {
+      # assuming the same detectors across all sessions (or looking only at the first session)
+      num_detectors <- ncol(fit[[1]]$capture_hist)
+      num_captures <- colSums(fit[[1]]$capture_hist)
+      det_and_capt <- data.frame(detectors[[1]], 
+        num_captures = num_captures)
+      p <- p +
+        geom_point(data = det_and_capt,
+        aes(x = x, y = y, size = num_captures))
+    } else {
+      p <- p +
+        geom_point(data = all_detectors, 
+          aes(x = x, y = y), colour = "black",
+           inherit.aes = FALSE)
+    }
+    
+    
+  }
+
+  p
+
 }

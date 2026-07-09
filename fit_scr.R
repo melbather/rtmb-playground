@@ -12,7 +12,7 @@
 # formula: A string containing the formula to be used in the model
 # detfn: The detection function. Either HN or HHN. Default is HN.
 
-fit_scr <- function(bin_capt, mask_coords, mask_df, traps, formula, detfn = "HN") {
+fit_scr <- function(bin_capt, mask_coords, mask_df, traps, formula, detfn = "HN", sigma_upper_limit = NULL) {
   # Load functions
   source("misc functions/avg_trap_dist.R")
   source("get_params.R")
@@ -36,16 +36,13 @@ fit_scr <- function(bin_capt, mask_coords, mask_df, traps, formula, detfn = "HN"
     mask_dists[[i]] <- crossdist(mask_coords[[i]][, 1], mask_coords[[i]][, 2],
                               traps[[i]][, 1], traps[[i]][, 2])
   }
-  #the below is breaking because construct.design doesn't like design_matrix_data
-  # i.e. it doesn't like mask_df
+
   # Get starting params and design matrix
-  #browser()
   params_and_design <- get_params(mask_df, formula, traps, detfn)
 
   # Fit the model using likelihood function closure and RTMB
-
   obj_scr <- RTMB::MakeADFun(
-    scr_log_likelihood_closure( # this is what is breaking now
+    scr_log_likelihood_closure(
       scr_log_likelihood, 
       data, 
       FALSE, 
@@ -55,8 +52,13 @@ fit_scr <- function(bin_capt, mask_coords, mask_df, traps, formula, detfn = "HN"
     ), 
     params_and_design$params, 
     random = "u")
-  
-  opt_scr <- nlminb(obj_scr$par, obj_scr$fn, obj_scr$gr)
+
+  if (!is.null(sigma_upper_limit)) {
+    opt_scr <- nlminb(obj_scr$par, obj_scr$fn, obj_scr$gr, 
+      upper = c(Inf, log(sigma_upper_limit), Inf, Inf, Inf, Inf))
+  } else {
+    opt_scr <- nlminb(obj_scr$par, obj_scr$fn, obj_scr$gr)
+  }
   sdreport <- sdreport(obj_scr)
 
   # Return model, starting params, design matrix, opt_scr, and sdreport
@@ -69,7 +71,8 @@ fit_scr <- function(bin_capt, mask_coords, mask_df, traps, formula, detfn = "HN"
     opt_scr = opt_scr,
     sdreport = sdreport,
     orig_mask = mask_df,
-    model = formula
+    model = formula,
+    capture_hist = bin_capt
   )
 
 }

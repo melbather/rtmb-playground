@@ -59,6 +59,13 @@ wiggly_surface <- function(mask, cov.pars, beta0, seed) {
   )
 }
 
+# TODO 
+# run the below in a loop and track which seed is the best one
+# then run the model
+# add ability to plotting function to show animal coords
+# add ability to plotting function to show detectors, by size of number of detections
+# add option for user to pass in upper limit for sigma into model function
+
 # simulate different surfaces with different parameters
 D1 <- wiggly_surface(mask, c(3, 100000*0.5), 0, 42)
 D2 <- wiggly_surface(mask, c(3, 100000*0.5), -1, 43)
@@ -67,6 +74,19 @@ D4 <- wiggly_surface(mask, c(4, 100000*0.5), 1, 45)
 D5 <- wiggly_surface(mask, c(2, 100000*0.5), -2, 46)
 D6 <- wiggly_surface(mask, c(5, 100000*0.5), -2, 47)
 D7 <- wiggly_surface(mask, c(2, 100000*0.5), -1, 48)
+D8 <- wiggly_surface(mask, c(3, 100000*0.2), -2, 49)
+D9 <- wiggly_surface(mask, c(4, 100000*0.2), -2, 50)
+D10 <- wiggly_surface(mask, c(4, 100000*0.1), -3, 51)
+D11 <- wiggly_surface(mask, c(4, 100000*0.3), -1, 52)
+D12 <- wiggly_surface(mask, c(2, 100000*0.1), -3, 53)
+D13 <- wiggly_surface(mask, c(2, 100000*0.1), -1, 54)
+D14 <- wiggly_surface(mask, c(2, 100000*0.1), -2, 55)
+D15 <- wiggly_surface(mask, c(20, 100000*0.1), -2, 56)
+D16 <- wiggly_surface(mask, c(20, 100000*0.1), -2, 57)
+D17 <- wiggly_surface(mask, c(20, 100000*0.1), -2, 58)
+D18 <- wiggly_surface(mask, c(20, 100000*0.1), 1, 58)
+D19 <- wiggly_surface(mask, c(20, 100000*0.025), 1, 60)
+D20 <- wiggly_surface(mask, c(20, 100000*0.025), -9.5, 60)
 
 plot.surf(mask$x, mask$y, D1, detectors)
 plot.surf(mask$x, mask$y, D2, detectors)
@@ -75,11 +95,23 @@ plot.surf(mask$x, mask$y, D4, detectors)
 plot.surf(mask$x, mask$y, D5, detectors)
 plot.surf(mask$x, mask$y, D6, detectors)
 plot.surf(mask$x, mask$y, D7, detectors)
-
-# D7 looks the best to me!
+plot.surf(mask$x, mask$y, D8, detectors)
+plot.surf(mask$x, mask$y, D9, detectors)
+plot.surf(mask$x, mask$y, D10, detectors)
+plot.surf(mask$x, mask$y, D11, detectors)
+plot.surf(mask$x, mask$y, D12, detectors)
+plot.surf(mask$x, mask$y, D13, detectors)
+plot.surf(mask$x, mask$y, D14, detectors)
+plot.surf(mask$x, mask$y, D15, detectors)
+plot.surf(mask$x, mask$y, D16, detectors)
+plot.surf(mask$x, mask$y, D17, detectors)
+plot.surf(mask$x, mask$y, D18, detectors)
+plot.surf(mask$x, mask$y, D19, detectors)
+plot.surf(mask$x, mask$y, D19, detectors)
+plot.surf(mask$x, mask$y, D20, detectors)
 
 # Use old simulation code from dissertation (modified)
-animals_in_cells <- rpois(length(D7), mask_area * D7)
+animals_in_cells <- rpois(length(D20), mask_area * D20)
   
 #ignore mask cells where there are no animals
 zero_animal_cells <- which(animals_in_cells == 0)
@@ -114,7 +146,7 @@ distances <- fields::rdist(animal_coords, detectors)
 
 #hence find their detection probabilities
 g0 <- 0.5
-sigma <- 60
+sigma <- 70
 probabilities <- g0 * exp(-distances^2/(2*sigma^2)) 
 random_capture_hist <- matrix(rbinom(length(probabilities), 1, probabilities), nrow(probabilities), ncol(probabilities)) 
 random_capture_hist_no_zero <- random_capture_hist[which(rowSums(random_capture_hist) != 0),]
@@ -124,7 +156,7 @@ fit_sim <- fit_scr(
   list(mask),
   mask,
   list(detectors),
-  "~s(x, k=25)",
+  "~s(x, y, k=25)",
   "HN"
 )
 
@@ -134,6 +166,12 @@ summary(fit_sim$sdreport)
 # overlay with activity centres]
 
 # prediction mask
-pred_mask <- mask
-plot_density(fit_sim, pred_mask, list(detectors))
+pred_mask <- expand.grid(
+  x = 1:110,
+  y = 1:110
+)
+
+pred_detectors <- matrix(c(rep(1:10, each = 10)*10, rep(1:10, 10)*10), ncol=2)
+
+plot_density(fit_sim, pred_mask, detectors = NULL)
 points(animal_coords, col="black")
