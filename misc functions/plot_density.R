@@ -1,4 +1,4 @@
-plot_density <- function(fit, mask, detectors = NULL, plot_det_density = FALSE) {
+plot_density <- function(fit, mask, detectors = NULL, plot_det_density = FALSE, title = NULL) {
   library(ggplot2)
 
   # Predict density across mask
@@ -66,7 +66,10 @@ plot_density <- function(fit, mask, detectors = NULL, plot_det_density = FALSE) 
            inherit.aes = FALSE)
     }
     
-    
+  }
+
+  if (!is.null(title)) {
+    p <- p + ggtitle(title)
   }
 
   p

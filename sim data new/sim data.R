@@ -59,59 +59,26 @@ wiggly_surface <- function(mask, cov.pars, beta0, seed) {
   )
 }
 
-# TODO 
-# run the below in a loop and track which seed is the best one
-# then run the model
-# add ability to plotting function to show animal coords
-# add ability to plotting function to show detectors, by size of number of detections
-# add option for user to pass in upper limit for sigma into model function
+# Run the function above on a loop and save output in a list
+n_sim <- 100
+wiggly_surface_output <- vector(mode = "list", length = n_sim)
+setNames(wiggly_surface_output, paste0("D", 1:n_sim))
 
-# simulate different surfaces with different parameters
-D1 <- wiggly_surface(mask, c(3, 100000*0.5), 0, 42)
-D2 <- wiggly_surface(mask, c(3, 100000*0.5), -1, 43)
-D3 <- wiggly_surface(mask, c(4, 100000*0.5), -2, 44)
-D4 <- wiggly_surface(mask, c(4, 100000*0.5), 1, 45)
-D5 <- wiggly_surface(mask, c(2, 100000*0.5), -2, 46)
-D6 <- wiggly_surface(mask, c(5, 100000*0.5), -2, 47)
-D7 <- wiggly_surface(mask, c(2, 100000*0.5), -1, 48)
-D8 <- wiggly_surface(mask, c(3, 100000*0.2), -2, 49)
-D9 <- wiggly_surface(mask, c(4, 100000*0.2), -2, 50)
-D10 <- wiggly_surface(mask, c(4, 100000*0.1), -3, 51)
-D11 <- wiggly_surface(mask, c(4, 100000*0.3), -1, 52)
-D12 <- wiggly_surface(mask, c(2, 100000*0.1), -3, 53)
-D13 <- wiggly_surface(mask, c(2, 100000*0.1), -1, 54)
-D14 <- wiggly_surface(mask, c(2, 100000*0.1), -2, 55)
-D15 <- wiggly_surface(mask, c(20, 100000*0.1), -2, 56)
-D16 <- wiggly_surface(mask, c(20, 100000*0.1), -2, 57)
-D17 <- wiggly_surface(mask, c(20, 100000*0.1), -2, 58)
-D18 <- wiggly_surface(mask, c(20, 100000*0.1), 1, 58)
-D19 <- wiggly_surface(mask, c(20, 100000*0.025), 1, 60)
-D20 <- wiggly_surface(mask, c(20, 100000*0.025), -9.5, 60)
+for (i in 1:n_sim) {
+  name <- paste0("D", i)
+  wiggly_surface_output[[i]] <- wiggly_surface(mask, c(20, 100000*0.025), -9.5, i)
+  plot.surf(mask$x, mask$y, wiggly_surface_output[[i]], detectors, title = name)
+}
 
-plot.surf(mask$x, mask$y, D1, detectors)
-plot.surf(mask$x, mask$y, D2, detectors)
-plot.surf(mask$x, mask$y, D3, detectors)
-plot.surf(mask$x, mask$y, D4, detectors)
-plot.surf(mask$x, mask$y, D5, detectors)
-plot.surf(mask$x, mask$y, D6, detectors)
-plot.surf(mask$x, mask$y, D7, detectors)
-plot.surf(mask$x, mask$y, D8, detectors)
-plot.surf(mask$x, mask$y, D9, detectors)
-plot.surf(mask$x, mask$y, D10, detectors)
-plot.surf(mask$x, mask$y, D11, detectors)
-plot.surf(mask$x, mask$y, D12, detectors)
-plot.surf(mask$x, mask$y, D13, detectors)
-plot.surf(mask$x, mask$y, D14, detectors)
-plot.surf(mask$x, mask$y, D15, detectors)
-plot.surf(mask$x, mask$y, D16, detectors)
-plot.surf(mask$x, mask$y, D17, detectors)
-plot.surf(mask$x, mask$y, D18, detectors)
-plot.surf(mask$x, mask$y, D19, detectors)
-plot.surf(mask$x, mask$y, D19, detectors)
-plot.surf(mask$x, mask$y, D20, detectors)
+# The shortlist of simulations from the above loop that I like:
+# 2, 7, 23, 33, 35, 46, 65, 68, 70, 81, 83, 88, 92, 93, 100
+
+# The only ones from above that are worth looking at are 7 and 35, 
+# but these produce way too many animals, so a random sample will need to be taken
+D <- wiggly_surface_output[[7]]
 
 # Use old simulation code from dissertation (modified)
-animals_in_cells <- rpois(length(D20), mask_area * D20)
+animals_in_cells <- rpois(length(D), mask_area * D)
   
 #ignore mask cells where there are no animals
 zero_animal_cells <- which(animals_in_cells == 0)
@@ -139,6 +106,9 @@ mask_y <- rep(populated_cells[,2], times = animals_in_cells)
 animal_x <- mask_x + x_displacements
 animal_y <- mask_y + y_displacements
 animal_coords <- cbind(animal_x, animal_y)
+
+# Take a sample of 100 of these since there are too many
+animal_coords <- animal_coords[sample(nrow(animal_coords), 100),]
 
 #DISTANCES OF ANIMALS FROM DETECTORS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #find distances of all animals to all the detectors
@@ -175,3 +145,8 @@ pred_detectors <- matrix(c(rep(1:10, each = 10)*10, rep(1:10, 10)*10), ncol=2)
 
 plot_density(fit_sim, pred_mask, detectors = NULL)
 points(animal_coords, col="black")
+
+# TODO 
+# then run the model
+# add ability to plotting function to show animal coords
+# add ability to plotting function to show detectors, by size of number of detections

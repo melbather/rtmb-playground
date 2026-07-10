@@ -482,7 +482,7 @@ sim.capt.cov <- function(traps,
 }
 
 ## A function for plotting covariates and estimated surfaces.
-plot.surf <- function(x, y, z, traps = NULL, trap.dets = NULL, scale = NA, scale.loc = "topleft", cols = NULL, zlim = NULL, sub = NULL, cex.mult = 1, cex.main.mult = 1, legend = TRUE, ...){
+plot.surf <- function(x, y, z, traps = NULL, trap.dets = NULL, scale = NA, scale.loc = "topleft", cols = NULL, zlim = NULL, sub = NULL, cex.mult = 1, cex.main.mult = 1, legend = TRUE, title = "Density", ...){
   xlim <- range(x)
   ylim <- range(y)
   xs <- sort(unique(x))
@@ -540,7 +540,7 @@ plot.surf <- function(x, y, z, traps = NULL, trap.dets = NULL, scale = NA, scale
     legend(xlim[2] - 0.1*(xlim[2] - xlim[1]), ylim[2], legend = legend.arg, fill = fill.arg, pch = pch.arg,
            pt.cex = cex.arg*cex.mult, border = NA, bty = "n", xpd = NA)
   }
-  title(..., cex.main = cex.main.mult*1, adj = 0)
+  title(title, ..., cex.main = cex.main.mult*1, adj = 0)
   mtext(sub, side = 1, line = -0.5, cex = 0.6, adj = 0)
   if (!is.null(traps)){
     if (is.null(trap.dets)){
