@@ -60,22 +60,24 @@ wiggly_surface <- function(mask, cov.pars, beta0, seed) {
 }
 
 # Run the function above on a loop and save output in a list
-n_sim <- 100
+n_sim <- 2
 wiggly_surface_output <- vector(mode = "list", length = n_sim)
 setNames(wiggly_surface_output, paste0("D", 1:n_sim))
 
 for (i in 1:n_sim) {
   name <- paste0("D", i)
-  wiggly_surface_output[[i]] <- wiggly_surface(mask, c(20, 100000*0.025), -9.5, i)
+  wiggly_surface_output[[i]] <- wiggly_surface(mask, c(30, 100000*0.02), -10, i)
   plot.surf(mask$x, mask$y, wiggly_surface_output[[i]], detectors, title = name)
 }
+
+save.image("wiggly_surfaces_run2.RData")
 
 # The shortlist of simulations from the above loop that I like:
 # 2, 7, 23, 33, 35, 46, 65, 68, 70, 81, 83, 88, 92, 93, 100
 
 # The only ones from above that are worth looking at are 7 and 35, 
 # but these produce way too many animals, so a random sample will need to be taken
-D <- wiggly_surface_output[[7]]
+D <- wiggly_surface_output[[2]]
 
 # Use old simulation code from dissertation (modified)
 animals_in_cells <- rpois(length(D), mask_area * D)
@@ -108,6 +110,7 @@ animal_y <- mask_y + y_displacements
 animal_coords <- cbind(animal_x, animal_y)
 
 # Take a sample of 100 of these since there are too many
+# TODO make this conditional on the number of total animals
 animal_coords <- animal_coords[sample(nrow(animal_coords), 100),]
 
 #DISTANCES OF ANIMALS FROM DETECTORS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -137,8 +140,8 @@ summary(fit_sim$sdreport)
 
 # prediction mask
 pred_mask <- expand.grid(
-  x = 1:110,
-  y = 1:110
+  x = 1:190,
+  y = 1:190
 )
 
 pred_detectors <- matrix(c(rep(1:10, each = 10)*10, rep(1:10, 10)*10), ncol=2)
