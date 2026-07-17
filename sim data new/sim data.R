@@ -72,11 +72,9 @@ for (i in 1:n_sim) {
 
 save.image("wiggly_surfaces_run2.RData")
 
-# The shortlist of simulations from the above loop that I like:
-# 2, 7, 23, 33, 35, 46, 65, 68, 70, 81, 83, 88, 92, 93, 100
+# Load the previously saved simulation above
+load("wiggly_surfaces_run2.RData")
 
-# The only ones from above that are worth looking at are 7 and 35, 
-# but these produce way too many animals, so a random sample will need to be taken
 D <- wiggly_surface_output[[2]]
 
 # Use old simulation code from dissertation (modified)
@@ -140,16 +138,20 @@ summary(fit_sim$sdreport)
 
 # prediction mask
 pred_mask <- expand.grid(
-  x = 1:190,
-  y = 1:190
+  x = 1:1900,
+  y = 1:1900
 )
 
-pred_detectors <- matrix(c(rep(1:10, each = 10)*10, rep(1:10, 10)*10), ncol=2)
+pred_detectors <- matrix(c(rep(5:14, each = 10)*100, rep(5:14, 10)*100), ncol=2)
 
-plot_density(fit_sim, pred_mask, detectors = NULL)
+plot_density(
+  fit_sim, 
+  pred_mask, 
+  detectors = list(pred_detectors),
+  animal_coords = animal_coords,
+  plot_det_density = TRUE
+)
 points(animal_coords, col="black")
 
 # TODO 
-# then run the model
 # add ability to plotting function to show animal coords
-# add ability to plotting function to show detectors, by size of number of detections

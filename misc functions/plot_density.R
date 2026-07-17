@@ -1,4 +1,9 @@
-plot_density <- function(fit, mask, detectors = NULL, plot_det_density = FALSE, title = NULL) {
+plot_density <- function(fit, mask, 
+  detectors = NULL, 
+  plot_det_density = FALSE, 
+  animal_coords = NULL,
+  title = NULL) {
+  
   library(ggplot2)
 
   # Predict density across mask
@@ -52,20 +57,40 @@ plot_density <- function(fit, mask, detectors = NULL, plot_det_density = FALSE, 
     
     if (plot_det_density) {
       # assuming the same detectors across all sessions (or looking only at the first session)
-      num_detectors <- ncol(fit[[1]]$capture_hist)
-      num_captures <- colSums(fit[[1]]$capture_hist)
-      det_and_capt <- data.frame(detectors[[1]], 
+      num_captures <- colSums(fit$capture_hist[[1]])
+      det_and_capt <- data.frame(
+        x = detectors[[1]][,1], 
+        y = detectors[[1]][,2],
         num_captures = num_captures)
       p <- p +
-        geom_point(data = det_and_capt,
-        aes(x = x, y = y, size = num_captures))
+        geom_point(
+          data = det_and_capt,
+          aes(x = x, y = y, size = num_captures),
+          alpha = 0.8,
+          inherit.aes = FALSE
+        ) +
+        labs(size = "Number of detections")
     } else {
       p <- p +
-        geom_point(data = all_detectors, 
-          aes(x = x, y = y), colour = "black",
-           inherit.aes = FALSE)
+        geom_point(
+          data = all_detectors, 
+          aes(x = x, y = y), 
+          colour = "black",
+          inherit.aes = FALSE
+        )
     }
     
+  }
+
+  if (!is.null(animal_coords)) {
+    animal_coords <- as.data.frame(animal_coords)
+    colnames(animal_coords) <- c("x", "y")
+    p <- p + geom_point(
+      data = animal_coords,
+      aes(x = x, y = y),
+      colour = "red",
+      inherit.aes = FALSE
+    )
   }
 
   if (!is.null(title)) {
