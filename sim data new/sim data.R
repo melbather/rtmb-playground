@@ -151,7 +151,3 @@ plot_density(
   animal_coords = animal_coords,
   plot_det_density = TRUE
 )
-points(animal_coords, col="black")
-
-# TODO 
-# add ability to plotting function to show animal coords

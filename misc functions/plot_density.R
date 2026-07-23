@@ -1,13 +1,15 @@
-plot_density <- function(fit, mask, 
+plot_density <- function(
+  fit, mask, 
   detectors = NULL, 
   plot_det_density = FALSE, 
   animal_coords = NULL,
-  title = NULL) {
+  title = NULL
+) {
   
   library(ggplot2)
 
   # Predict density across mask
-  pred_df <- data.frame(x = mask$x, y = mask$y) # TODO add covariates from mask 
+  pred_df <- data.frame(x = mask$x, y = mask$y)
 
   pred_design <- construct.design(
     model = as.formula(fit$model),
@@ -66,7 +68,7 @@ plot_density <- function(fit, mask,
         geom_point(
           data = det_and_capt,
           aes(x = x, y = y, size = num_captures),
-          alpha = 0.8,
+          alpha = 0.6,
           inherit.aes = FALSE
         ) +
         labs(size = "Number of detections")
@@ -85,12 +87,15 @@ plot_density <- function(fit, mask,
   if (!is.null(animal_coords)) {
     animal_coords <- as.data.frame(animal_coords)
     colnames(animal_coords) <- c("x", "y")
-    p <- p + geom_point(
-      data = animal_coords,
-      aes(x = x, y = y),
-      colour = "red",
-      inherit.aes = FALSE
-    )
+    animal_coords$point_type <- "Activity centre"
+    p <- p + 
+      geom_point(
+        data = animal_coords,
+        aes(x = x, y = y, colour = point_type),
+        alpha = 0.8,
+        inherit.aes = FALSE
+    ) +
+      labs(colour = NULL)
   }
 
   if (!is.null(title)) {
