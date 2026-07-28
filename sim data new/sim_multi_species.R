@@ -44,7 +44,7 @@ D <- wiggly_surface_multi(
   c(30, 100000*0.02), 
   beta0 = -10,
   beta1 = 0.9,
-  alpha0 = -12,
+  alpha0 = -4,
   alpha1 = 0.7,
   alpha2 = 0.8,
   seed1 = 2,
@@ -54,3 +54,25 @@ D <- wiggly_surface_multi(
 # simulate locations of activity centres for each species
 species1 <- sim_activity_centres(D$D1, mask, mask_area)
 species2 <- sim_activity_centres(D$D2, mask, mask_area)
+
+# plot the coordinates for both species
+
+#DISTANCES OF ANIMALS FROM DETECTORS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#find distances of all animals to all the detectors
+distances1 <- fields::rdist(species1$animal_coords, detectors)
+distances2 <- fields::rdist(species2$animal_coords, detectors)
+
+#hence find their detection probabilities
+g0_1 <- 0.5
+sigma_1 <- 70
+probabilities1 <- g0_1 * exp(-distances1^2/(2*sigma_1^2)) 
+
+g0_2 <- 0.4
+sigma_2 <- 75
+probabilities2 <- g0_2 * exp(-distances2^2/(2*sigma_2^2)) 
+
+random_capture_hist1 <- matrix(rbinom(length(probabilities1), 1, probabilities1), nrow(probabilities1), ncol(probabilities1)) 
+random_capture_hist_no_zero1 <- random_capture_hist1[which(rowSums(random_capture_hist1) != 0),]
+
+random_capture_hist2 <- matrix(rbinom(length(probabilities2), 1, probabilities2), nrow(probabilities2), ncol(probabilities2)) 
+random_capture_hist_no_zero2 <- random_capture_hist2[which(rowSums(random_capture_hist2) != 0),]
