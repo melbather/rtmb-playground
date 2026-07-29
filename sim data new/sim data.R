@@ -45,20 +45,6 @@ detectors <- matrix(c(rep(5:14, each = 10)*100, rep(5:14, 10)*100), ncol=2)
 plot(mask)
 points(detectors, col = "red", pch = 19)
 
-# function to simulate wiggly surface
-wiggly_surface <- function(mask, cov.pars, beta0, seed) {
-  set.seed(seed)
-  exp(
-    geoR::grf(
-      nrow(mask),
-      grid = mask, 
-      xlims = range(mask$x),
-      ylims = range(mask$y), 
-      cov.pars = cov.pars
-    )$data + beta0
-  )
-}
-
 # Run the function above on a loop and save output in a list
 n_sim <- 2
 wiggly_surface_output <- vector(mode = "list", length = n_sim)

@@ -76,3 +76,7 @@ random_capture_hist_no_zero1 <- random_capture_hist1[which(rowSums(random_captur
 
 random_capture_hist2 <- matrix(rbinom(length(probabilities2), 1, probabilities2), nrow(probabilities2), ncol(probabilities2)) 
 random_capture_hist_no_zero2 <- random_capture_hist2[which(rowSums(random_capture_hist2) != 0),]
+
+# plot coordinates of both species
+plot(species1$animal_coords, col="red", pch=19)
+points(species2$animal_coords, col="blue", pch=19)
