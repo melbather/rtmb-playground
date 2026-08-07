@@ -113,8 +113,10 @@ fit_sim <- fit_scr(
   list(mask),
   mask,
   list(detectors),
-  "~s(x, y, k=25)",
-  "HN"
+  formula = "~s(x, y, k=25)",
+  num_species = 2,
+  num_fields = 2,
+  detfn = "HN"
 )
 
 summary(fit_sim$sdreport)

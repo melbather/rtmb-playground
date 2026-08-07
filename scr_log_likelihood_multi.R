@@ -1,6 +1,6 @@
-# This is where the likelihood function lives now because the main script was getting too crowded.
+# adjustiing the likelihood function to work with two species
 
-scr_log_likelihood <- function(params, data_list, homogeneous, design, mask_dists, detfn = "HN") {
+scr_log_likelihood_multi <- function(params, data_list, homogeneous, design, mask_dists, detfn = "HN") {
   getAll(params)
   # parameters
   sigma <- exp(log_sigma)
@@ -19,6 +19,7 @@ scr_log_likelihood <- function(params, data_list, homogeneous, design, mask_dist
   
   total_ll <- 0
   num_sessions <- length(data_list)
+  num_species <- length(data_list[[1]])
   curr_matrix_start <- 1
 
   for (i in 1:num_sessions) {
@@ -54,7 +55,6 @@ scr_log_likelihood <- function(params, data_list, homogeneous, design, mask_dist
       mask.probs <- g0*exp(-mask.dists^2/(2*sigma^2))
       p.avoid <- apply(1 - mask.probs, 1, prod)
       p.det <- 1 - p.avoid
-      #browser()
       ## Calculating the effective sampling area.
       esa <- a*sum(p.det)
       ADREPORT(esa)
