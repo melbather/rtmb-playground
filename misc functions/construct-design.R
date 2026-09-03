@@ -20,9 +20,6 @@ construct.design <- function(model, df, sm = NULL, sm2ran = NULL, orig.df = NULL
     ## Setting unsuitable habitat to NA.
     if (!is.null(unsuitable)){
         n.unsuitable <- length(unsuitable)
-        for (i in 1:n.unsuitable){
-            df[names(unsuitable)[i]][df[names(unsuitable)[i]] == unsuitable[[i]]] <- NA
-        }
     }
     ## Full model formula with response.
     model <- update(model, dummy.response ~ .)
