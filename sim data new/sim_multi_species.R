@@ -80,3 +80,5 @@ random_capture_hist_no_zero2 <- random_capture_hist2[which(rowSums(random_captur
 # plot coordinates of both species
 plot(species1$animal_coords, col="red", pch=19)
 points(species2$animal_coords, col="blue", pch=19)
+
+save.image("sim data new/multi_species_sim_data.RData")

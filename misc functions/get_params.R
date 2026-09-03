@@ -1,6 +1,6 @@
 # Function that creates parameters and design matrix for inhomogeneous 
 
-source("misc functions/construct-design.R")
+source("./misc functions/construct-design.R")
 
 get_params <- function(design_matrix_data, 
   formula, 
@@ -64,6 +64,7 @@ get_params <- function(design_matrix_data,
         u = u
       )
     }
+
 
   }
 
