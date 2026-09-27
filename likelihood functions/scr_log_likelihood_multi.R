@@ -41,10 +41,23 @@ scr_log_likelihood_multi <- function(
   # Loading matrix ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   # number of rows = number of species
   # number of cols = number of fields
+  # TODO check with Ben that this looks okay
   if (num_species > 1) {
     loading_matrix <- matrix(0, nrow = num_species, ncol = num_fields)
     num_non_zero <- sum(num_species - 1:num_fields)
-    # finish this
+    loading_index <- 1
+    # loop through each field
+    for (k in seq_len(num_fields)) {
+      # put 1 on diagonal
+      loading_matrix[k, k] <- 1
+      if (k < num_species) {
+        for (s in (k + 1):num_species) {
+          loading_matrix[s, k] <- loading[loading_index]
+          loading_index <- loading_index + 1
+        }
+      }
+    }
+    ADREPORT(loading_matrix)
   }
   
   curr_matrix_start <- 1

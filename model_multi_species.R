@@ -6,6 +6,16 @@ library(mgcv)
 library(dplyr)
 library(fields)
 
+source("fitting-functions/fitting-functions.R")
+source("fit_scr.R")
+# Source all misc functions
+sapply(
+  list.files("misc functions", full.names = TRUE, recursive = TRUE), 
+  function(i) {
+    source(paste0(i))
+  })
+
+
 # Get model functions to work using the data from sim_multi_species.R
 load("sim data new/multi_species_sim_data.RData")
 
@@ -18,7 +28,7 @@ bin_capt <- list(
   )
 )
 
-fit_scr(
+fit_output <- fit_scr(
   bin_capt, 
   list(mask), 
   mask, 
