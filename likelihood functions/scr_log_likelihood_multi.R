@@ -44,7 +44,6 @@ scr_log_likelihood_multi <- function(
   # TODO check with Ben that this looks okay
   if (num_species > 1) {
     loading_matrix <- matrix(0, nrow = num_species, ncol = num_fields)
-    num_non_zero <- sum(num_species - 1:num_fields)
     loading_index <- 1
     # loop through each field
     for (k in seq_len(num_fields)) {

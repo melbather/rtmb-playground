@@ -54,7 +54,7 @@ get_params <- function(design_matrix_data,
         log_sigma_u = log_sigma_u,
         beta = beta,
         u = u,
-        loading = rep(0, sum(num_species - seq_len(num_fields)))
+        loading = rep(0, sum(num_species - 1:num_fields))
       )
     } else if (detfn == "HHN") {
       parameters <- list( 
@@ -63,7 +63,7 @@ get_params <- function(design_matrix_data,
         log_sigma_u = log_sigma_u,
         beta = beta,
         u = u,
-        loading = rep(0, sum(num_species - seq_len(num_fields)))
+        loading = rep(0, sum(num_species - 1:num_fields))
       )
     }
 
