@@ -37,7 +37,6 @@ fit_scr <- function(
   sigma_upper_limit = NULL) {
   # Load functions
   source("misc functions/avg_trap_dist.R")
-  source("misc functions/get_params.R")
   source("likelihood functions/scr_log_likelihood.R")
   source("likelihood functions/scr_log_likelihood_multi.R")
   source("misc functions/mask_cell_area.R")

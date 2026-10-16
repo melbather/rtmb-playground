@@ -67,7 +67,6 @@ get_params <- function(design_matrix_data,
       )
     }
 
-
   }
 
   list(

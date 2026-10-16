@@ -41,7 +41,7 @@ detectors <- matrix(c(rep(5:14, each = 10)*100, rep(5:14, 10)*100), ncol=2)
 
 D <- wiggly_surface_multi(
   mask,
-  c(30, 100000*0.02), 
+  c(30, 100000*0.02), # update this for each species
   beta0 = -10,
   beta1 = 0.9,
   alpha0 = -4,
@@ -54,6 +54,8 @@ D <- wiggly_surface_multi(
 # simulate locations of activity centres for each species
 species1 <- sim_activity_centres(D$D1, mask, mask_area)
 species2 <- sim_activity_centres(D$D2, mask, mask_area)
+
+field1 <- D$field1
 
 # plot the coordinates for both species
 

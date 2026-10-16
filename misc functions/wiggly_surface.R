@@ -49,6 +49,8 @@ wiggly_surface_multi <- function(
 
   list(
     D1 = D1,
-    D2 = D2
+    D2 = D2,
+    field1 = field1,
+    field2 = field2
   )
 }

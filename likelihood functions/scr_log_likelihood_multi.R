@@ -80,11 +80,11 @@ scr_log_likelihood_multi <- function(
         D <- as.vector(exp(design_matrix %*% beta + random_matrix %*% u)/10000)
       } else {
         # D needs to be a matrix now, not a vector
-        fixed_effects <- design_matrix[,1:nrow(beta)] %*% beta # I think it is breaking here now
+        fixed_effects <- design_matrix[,1:nrow(beta)] %*% beta 
         # matrix for each wiggly field
         wiggly_fields <- random_matrix %*% u
         spatial_effects <- wiggly_fields %*% loading_matrix
-        D <- exp(fixed_effects + spatial_effects) / 1000 # matrix for all species to loop through below
+        D <- exp(fixed_effects + spatial_effects) / 10000 # matrix for all species to loop through below
       }
     } 
 
@@ -152,7 +152,6 @@ scr_log_likelihood_multi <- function(
       #Calculating likelihood contribution due to each detected animal's capture history.
       if (n != 0) {
         if (detfn == "HHN") log.f.capt.given.s <- log(-expm1(-lambda[s]) + tiny_num) %*% t(capt.hist) - lambda %*% t(1-capt.hist)
-        # error is here now - wrong dimensions
         else log.f.capt.given.s <- log(mask.probs + tiny_num) %*% t(capt.hist) + log(1-mask.probs) %*% t(1-capt.hist)
 
         if (!homogeneous) {
